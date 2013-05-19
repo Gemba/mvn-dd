@@ -1,0 +1,9 @@
+[ 
+  {
+    "groupId": "org.codehaus.mojo",
+    "artifactId": "versions-maven-plugin",
+    "classifier": "",
+    "extension": "jar",
+    "version": "2.0"
+  }
+]

@@ -59,7 +59,7 @@ public class DependencyResolver {
       throws DependencyCollectionException, DependencyResolutionException {
     log.info("Resolving: {} with these dependencies", artifact.toString());
 
-    Dependency dependency = new Dependency(artifact, JavaScopes.COMPILE);
+    Dependency dependency = new Dependency(artifact, null);
 
     DependencyNode jarNode = repoSystemHelper.collectDependencies(dependency);
 

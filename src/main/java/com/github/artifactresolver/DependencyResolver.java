@@ -19,6 +19,10 @@ import org.sonatype.aether.resolution.DependencyResolutionException;
 import org.sonatype.aether.resolution.DependencyResult;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
 import org.sonatype.aether.util.artifact.JavaScopes;
+import org.sonatype.aether.graph.DependencyFilter;
+import org.sonatype.aether.util.filter.DependencyFilterUtils;
+import org.sonatype.aether.util.graph.FilteringDependencyVisitor;
+import org.sonatype.aether.util.graph.TreeDependencyVisitor;
 
 /**
  * Instrumentation class for dependencies. Delegates the resolution to the {@link RepositorySystemHelper}
@@ -59,13 +63,14 @@ public class DependencyResolver {
       throws DependencyCollectionException, DependencyResolutionException {
     log.info("Resolving: {} with these dependencies", artifact.toString());
 
-    Dependency dependency = new Dependency(artifact, null);
+    Dependency dependency = new Dependency(artifact, JavaScopes.COMPILE);
 
     DependencyNode jarNode = repoSystemHelper.collectDependencies(dependency);
 
-    jarNode.accept(new DependencyGraphPrinter());
+    DependencyFilter classpathFilter = DependencyFilterUtils.classpathFilter(JavaScopes.TEST);
+    jarNode.accept(new TreeDependencyVisitor(new FilteringDependencyVisitor(new DependencyGraphPrinter(), classpathFilter)));
 
-    DependencyRequest dependencyRequest = new DependencyRequest(jarNode, null);
+    DependencyRequest dependencyRequest = new DependencyRequest(jarNode, classpathFilter);
     DependencyResult dependencyResult = repoSystemHelper.resolveDependencies(dependencyRequest);
 
     if (javadoc) {

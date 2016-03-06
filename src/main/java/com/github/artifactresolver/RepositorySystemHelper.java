@@ -23,6 +23,12 @@ import org.sonatype.aether.resolution.DependencyRequest;
 import org.sonatype.aether.resolution.DependencyResolutionException;
 import org.sonatype.aether.resolution.DependencyResult;
 import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
+import org.sonatype.aether.util.artifact.JavaScopes;
+import org.sonatype.aether.util.graph.selector.AndDependencySelector;
+import org.sonatype.aether.util.graph.selector.ExclusionDependencySelector;
+import org.sonatype.aether.util.graph.selector.OptionalDependencySelector;
+import org.sonatype.aether.util.graph.selector.ScopeDependencySelector;
+import org.sonatype.aether.collection.DependencySelector;
 
 /**
  * Helper class for resolving dependencies with a set of remote repositories.
@@ -100,6 +106,14 @@ public class RepositorySystemHelper {
 
     LocalRepository localRepo = new LocalRepository(localDownloadDir);
     session.setLocalRepositoryManager(system.newLocalRepositoryManager(localRepo));
+
+    DependencySelector depFilter =
+        new AndDependencySelector(
+        new ScopeDependencySelector(JavaScopes.PROVIDED),
+        new OptionalDependencySelector(),
+        new ExclusionDependencySelector()
+    );
+    session.setDependencySelector(depFilter);
 
     return session;
   }

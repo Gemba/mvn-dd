@@ -1,4 +1,4 @@
-package com.github.artifactresolver;
+package com.github.gemba.artifactresolver;
 
 /*******************************************************************************
  * Copyright (c) 2013 by Gemba
@@ -10,10 +10,10 @@ package com.github.artifactresolver;
 import java.util.HashMap;
 import java.util.Stack;
 
+import org.eclipse.aether.graph.DependencyNode;
+import org.eclipse.aether.graph.DependencyVisitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.sonatype.aether.graph.DependencyNode;
-import org.sonatype.aether.graph.DependencyVisitor;
 
 /**
  * Writes the dependencies of an artifact as tree to a logger.

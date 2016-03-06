@@ -1,4 +1,4 @@
-package com.github.artifactresolver;
+package com.github.gemba.artifactresolver;
 
 /*******************************************************************************
  * Copyright (c) 2013 by Gemba
@@ -7,21 +7,22 @@ package com.github.artifactresolver;
  * which accompanies this distribution (see COPYING), and is available at
  *   http://www.eclipse.org/legal/epl-v10.html
  *******************************************************************************/
+import org.eclipse.aether.artifact.Artifact;
+import org.eclipse.aether.artifact.DefaultArtifact;
+import org.eclipse.aether.collection.DependencyCollectionException;
+import org.eclipse.aether.graph.Dependency;
+import org.eclipse.aether.graph.DependencyNode;
+import org.eclipse.aether.resolution.ArtifactResult;
+import org.eclipse.aether.resolution.DependencyRequest;
+import org.eclipse.aether.resolution.DependencyResolutionException;
+import org.eclipse.aether.resolution.DependencyResult;
+import org.eclipse.aether.util.artifact.JavaScopes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.sonatype.aether.artifact.Artifact;
-import org.sonatype.aether.collection.DependencyCollectionException;
-import org.sonatype.aether.graph.Dependency;
-import org.sonatype.aether.graph.DependencyNode;
-import org.sonatype.aether.resolution.ArtifactResult;
-import org.sonatype.aether.resolution.DependencyRequest;
-import org.sonatype.aether.resolution.DependencyResolutionException;
-import org.sonatype.aether.resolution.DependencyResult;
-import org.sonatype.aether.util.artifact.DefaultArtifact;
-import org.sonatype.aether.util.artifact.JavaScopes;
 
 /**
- * Instrumentation class for dependencies. Delegates the resolution to the {@link RepositorySystemHelper}
+ * Instrumentation class for dependencies. Delegates the resolution to the
+ * {@link RepositorySystemHelper}
  * 
  * @author Gemba
  */

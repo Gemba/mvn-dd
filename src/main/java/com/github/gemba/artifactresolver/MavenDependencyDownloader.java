@@ -1,4 +1,4 @@
-package com.github.artifactresolver;
+package com.github.gemba.artifactresolver;
 
 /*******************************************************************************
  * Copyright (c) 2013 by Gemba
@@ -19,16 +19,17 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.eclipse.aether.artifact.DefaultArtifact;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.sonatype.aether.util.artifact.DefaultArtifact;
 
 /**
- * This utility downloads all artifacts dependencies into a local directory. The downloaded dependencies can be used for an
- * internet-less Nexus or in a local maven repository.
+ * This utility downloads all artifacts dependencies into a local directory. The
+ * downloaded dependencies can be used for an internet-less Nexus or in a local
+ * maven repository.
  * 
  * @author Gemba
  */
@@ -118,7 +119,8 @@ public class MavenDependencyDownloader {
     dependencyFile = line.getOptionValue('f', DEFAULT_DEPENDENCY_FILE);
     localRepo = line.getOptionValue('d', DEFAULT_LOCAL_DOWNLOAD_REPO);
 
-    // look for CLI <groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>
+    // look for CLI
+    // <groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>
     artifacts = new ArrayList<DefaultArtifact>();
     for (String arg : line.getArgs()) {
       if (arg.contains(":")) {
@@ -137,18 +139,15 @@ public class MavenDependencyDownloader {
 
     Option help = new Option("h", "help", false, "print this usage and exit");
 
-    Option jsonFile = OptionBuilder.withLongOpt("dependency-file")
-        .withDescription("use this JSON dependency file (default:" + DEFAULT_DEPENDENCY_FILE + ")").hasArg()
-        .withArgName("JSON-File").create('f');
+    Option jsonFile = Option.builder("f").longOpt("dependency-file")
+        .desc("use this JSON dependency file (default:" + DEFAULT_DEPENDENCY_FILE + ")").hasArg().argName("JSON-File").build();
 
-    Option depDir = OptionBuilder.withLongOpt("dependency-dir")
-        .withDescription("download dependencies to this folder (default:" + DEFAULT_LOCAL_DOWNLOAD_REPO + ")").hasArg()
-        .withArgName("Directory").create('d');
+    Option depDir = Option.builder("d").longOpt("dependency-dir")
+        .desc("download dependencies to this folder (default:" + DEFAULT_LOCAL_DOWNLOAD_REPO + ")").hasArg().argName("Directory")
+        .build();
 
-    Option javadoc = OptionBuilder.withLongOpt("with-javadoc").withDescription("download javadoc attachment of artifact")
-        .create('j');
-    Option sources = OptionBuilder.withLongOpt("with-sources").withDescription("download source attachment of artifact")
-        .create('s');
+    Option javadoc = Option.builder("j").longOpt("with-javadoc").desc("download javadoc attachment of artifact").build();
+    Option sources = Option.builder("s").longOpt("with-sources").desc("download source attachment of artifact").build();
 
     options.addOption(help);
     options.addOption(depDir);

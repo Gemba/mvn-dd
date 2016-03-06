@@ -1,4 +1,4 @@
-package com.github.artifactresolver;
+package com.github.gemba.artifactresolver;
 
 /*******************************************************************************
  * Copyright (c) 2013 by Gemba
@@ -7,22 +7,27 @@ package com.github.artifactresolver;
  * which accompanies this distribution (see COPYING), and is available at
  *   http://www.eclipse.org/legal/epl-v10.html
  *******************************************************************************/
-import org.apache.maven.repository.internal.MavenRepositorySystemSession;
-import org.apache.maven.repository.internal.MavenServiceLocator;
-import org.sonatype.aether.RepositorySystem;
-import org.sonatype.aether.RepositorySystemSession;
-import org.sonatype.aether.collection.CollectRequest;
-import org.sonatype.aether.collection.DependencyCollectionException;
-import org.sonatype.aether.connector.wagon.WagonProvider;
-import org.sonatype.aether.connector.wagon.WagonRepositoryConnectorFactory;
-import org.sonatype.aether.graph.Dependency;
-import org.sonatype.aether.graph.DependencyNode;
-import org.sonatype.aether.repository.LocalRepository;
-import org.sonatype.aether.repository.RemoteRepository;
-import org.sonatype.aether.resolution.DependencyRequest;
-import org.sonatype.aether.resolution.DependencyResolutionException;
-import org.sonatype.aether.resolution.DependencyResult;
-import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
+import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
+import org.eclipse.aether.DefaultRepositorySystemSession;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.collection.CollectRequest;
+import org.eclipse.aether.collection.DependencyCollectionException;
+import org.eclipse.aether.connector.basic.BasicRepositoryConnectorFactory;
+import org.eclipse.aether.graph.Dependency;
+import org.eclipse.aether.graph.DependencyNode;
+import org.eclipse.aether.impl.DefaultServiceLocator;
+import org.eclipse.aether.repository.LocalRepository;
+import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.resolution.DependencyRequest;
+import org.eclipse.aether.resolution.DependencyResolutionException;
+import org.eclipse.aether.resolution.DependencyResult;
+import org.eclipse.aether.spi.connector.RepositoryConnectorFactory;
+import org.eclipse.aether.spi.connector.transport.TransporterFactory;
+import org.eclipse.aether.spi.log.LoggerFactory;
+import org.eclipse.aether.spi.log.NullLoggerFactory;
+import org.eclipse.aether.transport.file.FileTransporterFactory;
+import org.eclipse.aether.transport.http.HttpTransporterFactory;
 
 /**
  * Helper class for resolving dependencies with a set of remote repositories.
@@ -51,9 +56,9 @@ public class RepositorySystemHelper {
 
     session = newSession(repoSystem, localRepoDir);
 
-    RemoteRepository central = new RemoteRepository("central", "default", "http://repo1.maven.org/maven2/");
-    RemoteRepository codehaus = new RemoteRepository("codehaus", "default", "http://dist.codehaus.org/");
-    RemoteRepository ibiblio = new RemoteRepository("ibiblio", "default", "http://www.ibiblio.org/maven/");
+    RemoteRepository central = new RemoteRepository.Builder("central", "default", "http://central.maven.org/maven2/").build();
+    RemoteRepository codehaus = new RemoteRepository.Builder("codehaus", "default", "http://dist.codehaus.org/").build();
+    RemoteRepository ibiblio = new RemoteRepository.Builder("ibiblio", "default", "http://www.ibiblio.org/maven/").build();
 
     collectRequest = new CollectRequest();
     collectRequest.addRepository(central);
@@ -96,10 +101,10 @@ public class RepositorySystemHelper {
    * @return the configured repository session
    */
   private RepositorySystemSession newSession(RepositorySystem system, final String localDownloadDir) {
-    MavenRepositorySystemSession session = new MavenRepositorySystemSession();
+    DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
 
     LocalRepository localRepo = new LocalRepository(localDownloadDir);
-    session.setLocalRepositoryManager(system.newLocalRepositoryManager(localRepo));
+    session.setLocalRepositoryManager(system.newLocalRepositoryManager(session, localRepo));
 
     return session;
   }
@@ -110,9 +115,18 @@ public class RepositorySystemHelper {
    * @return the {@link RepositorySystemHelper}
    */
   private RepositorySystem newRepositorySystem() {
-    MavenServiceLocator locator = new MavenServiceLocator();
-    locator.setServices(WagonProvider.class, new ManualWagonProvider());
-    locator.addService(RepositoryConnectorFactory.class, WagonRepositoryConnectorFactory.class);
+    DefaultServiceLocator locator = MavenRepositorySystemUtils.newServiceLocator();
+
+    locator.addService(RepositoryConnectorFactory.class, BasicRepositoryConnectorFactory.class);
+    locator.addService(TransporterFactory.class, FileTransporterFactory.class);
+    locator.addService(TransporterFactory.class, HttpTransporterFactory.class);
+
+    locator.setErrorHandler(new DefaultServiceLocator.ErrorHandler() {
+      @Override
+      public void serviceCreationFailed(Class<?> type, Class<?> impl, Throwable exception) {
+        exception.printStackTrace();
+      }
+    });
 
     return locator.getService(RepositorySystem.class);
   }

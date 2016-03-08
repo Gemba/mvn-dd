@@ -24,13 +24,17 @@ Since I assume you are familar with maven, compiling and starting is
 straight forward, eg.:
 
     $ mvn package exec:java -Dexec.args="--help" 
+
+or easier
+
+    $ ./mvn-dd --help
  
 will give you the options to fiddle about. 
 
 Sample usage after filling the file dependencies.json with the wanted 
 artifacts to download artifacts with javadoc and source: 
 
-    $ mvn package exec:java -Dexec.args="--with-javadoc --with-sources" 
+    $ ./mvn-dd --with-javadoc --with-sources 
 
 Alternatively you may use the jar:
 
@@ -41,19 +45,44 @@ Alternatively you may use the jar:
 In either case you may provide the "coordinates" of the artifacts 
 directly, e.g.: 
 
-    $ java -jar target/mvn-dependency-downloader-jar-with-dependencies.jar org.apache.cxf:cxf-codegen-plugin:2.7.5 [...]
+    $ ./mvn-dd org.apache.cxf:cxf-codegen-plugin:2.7.5 [...]
 
 The coordinates of an artifact are expected in this format (separate 
 each artifact by a space): 
 
-    <groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>    
+    <groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>
+
+Extra repositories to be queried for mavenized jars can be added
+in the file `extra-repos.json`.
 
 Limitations 
 ----------- 
-Some artifacts do not provide source or javadoc 
-attachments. The program will state an warning in such cases. 
+  * Some artifacts do not provide source or javadoc 
+    attachments. The program will state an warning in such cases. 
+  * Does not download eg. test scope within the dependency tree. See also issue [#1](issues/1)
 
 License 
 ------- 
-Eclipse Public License (see COPYING) 
+Eclipse Public License (see COPYING)
+
+Changelog
+---------
+
+### v0.3 (Mar 2016) ###
+  * Version bumps of referenced libraries
+  * Added shell scripts Linux and Windows
+  * Corrected package structure
+
+### v0.2 (June 2013) ###
+  * Providing artifact coordinates from CLI
+
+### v0.1 (May 2013) ###
+  * Initial release to Github
+
+References
+----------
+[Aether Wiki](https://wiki.eclipse.org/Aether)
+
+
+
 

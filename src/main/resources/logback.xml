@@ -3,10 +3,14 @@
 
   <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
-      <!--  pattern>%-5level %logger{36}: %msg%n</pattern -->
+      <!-- pattern>%-5level %logger{36}: %msg%n</pattern -->
       <pattern>%msg%n</pattern>
     </encoder>
   </appender>
+
+  <logger name="com.github.gemba.artifactresolver">
+    <level value="info" />
+  </logger>
 
   <root level="info">
     <appender-ref ref="STDOUT" />

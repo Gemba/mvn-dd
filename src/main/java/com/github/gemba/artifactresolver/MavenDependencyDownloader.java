@@ -8,17 +8,20 @@ package com.github.gemba.artifactresolver;
  *   http://www.eclipse.org/legal/epl-v10.html
  *******************************************************************************/
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.GnuParser;
+import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.io.IOUtils;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -37,6 +40,7 @@ public class MavenDependencyDownloader {
 
   private static final String DEFAULT_LOCAL_DOWNLOAD_REPO = "local-repo";
   private static final String DEFAULT_DEPENDENCY_FILE = "dependencies.json";
+  private static final String EXTRA_REPO_FILE = "extra-repos.json";
 
   private static final Logger log = LoggerFactory.getLogger(MavenDependencyDownloader.class);
 
@@ -48,6 +52,7 @@ public class MavenDependencyDownloader {
   private static String localRepo;
   private static ArrayList<DefaultArtifact> artifacts;
   private static DependencyResolver dependencyResolver;
+  private static Map<String, String> extraRepos = new HashMap<String, String>();
 
   /**
    * Default constructor.
@@ -62,7 +67,9 @@ public class MavenDependencyDownloader {
 
     parseCommandLine(args);
 
-    RepositorySystemHelper repoSystemHelper = new RepositorySystemHelper(localRepo);
+    readExtraRepos();
+
+    RepositorySystemHelper repoSystemHelper = new RepositorySystemHelper(localRepo, extraRepos);
     dependencyResolver = new DependencyResolver(repoSystemHelper);
 
     if (artifacts.isEmpty()) {
@@ -87,11 +94,11 @@ public class MavenDependencyDownloader {
         dependencyResolver.downloadDependencyTree(artifact, javadoc, sources);
       }
     }
-    log.info("Artifacts downloaded to \"{}\". Finished. Thank you.", localRepo);
+    log.info("... artifacts downloaded to \"{}\". Finished. Thank you.", localRepo);
   }
 
   private static void parseCommandLine(String[] args) {
-    CommandLineParser parser = new GnuParser();
+    CommandLineParser parser = new DefaultParser();
     CommandLine line = null;
 
     try {
@@ -103,8 +110,9 @@ public class MavenDependencyDownloader {
 
     if (line.hasOption('h')) {
       HelpFormatter formatter = new HelpFormatter();
-      String header = "where each [coord] is expected in the format <groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>, separate multiple [coord] by a space. If [coord] is provided the JSON file will be ignored. Defaults are: <extension>=jar, <classifier>=\"\".\n Options are:";
-      formatter.printHelp(MavenDependencyDownloader.class.getSimpleName() + " [coords...] [options]", header, options, null);
+      String header = "where each [coord] is expected in the format <groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>, separate multiple [coord] by a space. If [coord] is provided the JSON file will be ignored. Defaults are: <extension>=jar, <classifier>=\"\".\n\n Options are:";
+      String footer = "\nAdditonal repositories to be searched for dependencies can be added in file '" + EXTRA_REPO_FILE + "'";
+      formatter.printHelp(MavenDependencyDownloader.class.getSimpleName() + " [coords...] [options]", header, options, footer);
       System.exit(0);
     }
 
@@ -133,7 +141,6 @@ public class MavenDependencyDownloader {
   /**
    * Set up CLI options.
    */
-  @SuppressWarnings("static-access")
   private void createOptions() {
     options = new Options();
 
@@ -155,4 +162,33 @@ public class MavenDependencyDownloader {
     options.addOption(javadoc);
     options.addOption(sources);
   }
+
+  /**
+   * Reads extra repositories file. Expected format is JSON array.
+   * 
+   * @see #EXTRA_REPO_FILE
+   * @throws Exception
+   */
+  private static void readExtraRepos() throws Exception {
+
+    JSONParser jsonParser = new JSONParser();
+    FileReader fileReader = null;
+    try {
+      fileReader = new FileReader(new File(EXTRA_REPO_FILE));
+      JSONArray jsonArray = (JSONArray) jsonParser.parse(fileReader);
+      fileReader.close();
+      for (Object obj : jsonArray) {
+        JSONObject jsonObj = (JSONObject) obj;
+        String id = (String) jsonObj.get("id");
+        String repourl = (String) jsonObj.get("repourl");
+        extraRepos.put(id, repourl);
+      }
+    } catch (FileNotFoundException exc) {
+      log.debug("No extra repositories defined. File not found: {}.", EXTRA_REPO_FILE);
+      return;
+    } finally {
+      IOUtils.closeQuietly(fileReader);
+    }
+  }
+
 }

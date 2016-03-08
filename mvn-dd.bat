@@ -1,2 +1,2 @@
 @echo off
-mvn exec:java -Dexec.args="%*"
+java -jar target/mvn-dependency-downloader-jar-with-dependencies.jar "%*"

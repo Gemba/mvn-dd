@@ -7,6 +7,10 @@ package com.github.gemba.artifactresolver;
  * which accompanies this distribution (see COPYING), and is available at
  *   http://www.eclipse.org/legal/epl-v10.html
  *******************************************************************************/
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
@@ -24,10 +28,10 @@ import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.eclipse.aether.resolution.DependencyResult;
 import org.eclipse.aether.spi.connector.RepositoryConnectorFactory;
 import org.eclipse.aether.spi.connector.transport.TransporterFactory;
-import org.eclipse.aether.spi.log.LoggerFactory;
-import org.eclipse.aether.spi.log.NullLoggerFactory;
 import org.eclipse.aether.transport.file.FileTransporterFactory;
 import org.eclipse.aether.transport.http.HttpTransporterFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Helper class for resolving dependencies with a set of remote repositories.
@@ -40,30 +44,38 @@ public class RepositorySystemHelper {
   private RepositorySystemSession session;
   private CollectRequest collectRequest;
 
+  private static final Logger log = LoggerFactory.getLogger(RepositorySystemHelper.class);
+  
   /**
    * Initalizes the aether environment. Uses these repositories:
    * <ul>
-   * <li>http://repo1.maven.org/maven2/
-   * <li>http://dist.codehaus.org/
-   * <li>http://www.ibiblio.org/maven/
+   * <li>http://central.maven.org/maven2/
    * </ul>
    * 
    * @param localRepoDir
    *          path where to put the downloaded dependencies
+   * @param extraRepos
+   *          map with extra repositories <id, url>.
    */
-  public RepositorySystemHelper(String localRepoDir) {
+  public RepositorySystemHelper(String localRepoDir, Map<String, String> extraRepos) {
     repoSystem = newRepositorySystem();
 
     session = newSession(repoSystem, localRepoDir);
 
     RemoteRepository central = new RemoteRepository.Builder("central", "default", "http://central.maven.org/maven2/").build();
-    RemoteRepository codehaus = new RemoteRepository.Builder("codehaus", "default", "http://dist.codehaus.org/").build();
-    RemoteRepository ibiblio = new RemoteRepository.Builder("ibiblio", "default", "http://www.ibiblio.org/maven/").build();
 
     collectRequest = new CollectRequest();
     collectRequest.addRepository(central);
-    collectRequest.addRepository(codehaus);
-    collectRequest.addRepository(ibiblio);
+
+    RemoteRepository repo = null;
+    Iterator<Entry<String, String>> iterator = extraRepos.entrySet().iterator();
+    while (iterator.hasNext()) {
+      Entry<String, String> e = iterator.next();
+      repo = new RemoteRepository.Builder(e.getKey(), "default", e.getValue()).build();
+      collectRequest.addRepository(repo);
+      log.debug("Using extra repository '{}': {}", e.getKey(), e.getValue());
+    }
+
   }
 
   /**

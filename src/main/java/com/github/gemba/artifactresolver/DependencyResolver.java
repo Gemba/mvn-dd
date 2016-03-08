@@ -58,7 +58,7 @@ public class DependencyResolver {
    */
   public void downloadDependencyTree(DefaultArtifact artifact, boolean javadoc, boolean sources)
       throws DependencyCollectionException, DependencyResolutionException {
-    log.info("Resolving: {} with these dependencies", artifact.toString());
+    log.info("Resolving: {} with these dependencies ...", artifact.toString());
 
     Dependency dependency = new Dependency(artifact, JavaScopes.COMPILE);
 

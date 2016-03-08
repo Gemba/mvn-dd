@@ -1,0 +1,6 @@
+[ 
+  {
+    "id": "nuxeo",
+    "repourl": "http://maven.nuxeo.org/nexus/content/groups/public/",
+  },  
+]

@@ -17,11 +17,10 @@ import org.eclipse.aether.resolution.DependencyRequest;
 import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.eclipse.aether.resolution.DependencyResult;
 import org.eclipse.aether.util.artifact.JavaScopes;
-import org.eclipse.aether.util.artifact.DefaultArtifact
 import org.eclipse.aether.graph.DependencyFilter;
 import org.eclipse.aether.util.filter.DependencyFilterUtils;
-import org.eclipse.aether.util.graph.FilteringDependencyVisitor;
-import org.eclipse.aether.util.graph.TreeDependencyVisitor;
+import org.eclipse.aether.util.graph.visitor.FilteringDependencyVisitor;
+import org.eclipse.aether.util.graph.visitor.TreeDependencyVisitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

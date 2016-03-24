@@ -30,6 +30,12 @@ import org.eclipse.aether.spi.connector.RepositoryConnectorFactory;
 import org.eclipse.aether.spi.connector.transport.TransporterFactory;
 import org.eclipse.aether.transport.file.FileTransporterFactory;
 import org.eclipse.aether.transport.http.HttpTransporterFactory;
+import org.eclipse.aether.util.artifact.JavaScopes;
+import org.eclipse.aether.util.graph.selector.AndDependencySelector;
+import org.eclipse.aether.util.graph.selector.ExclusionDependencySelector;
+import org.eclipse.aether.util.graph.selector.OptionalDependencySelector;
+import org.eclipse.aether.util.graph.selector.ScopeDependencySelector;
+import org.eclipse.aether.collection.DependencySelector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -117,6 +123,14 @@ public class RepositorySystemHelper {
 
     LocalRepository localRepo = new LocalRepository(localDownloadDir);
     session.setLocalRepositoryManager(system.newLocalRepositoryManager(session, localRepo));
+
+    DependencySelector depFilter =
+        new AndDependencySelector(
+        new ScopeDependencySelector(JavaScopes.PROVIDED),
+        new OptionalDependencySelector(),
+        new ExclusionDependencySelector()
+    );
+    session.setDependencySelector(depFilter);
 
     return session;
   }

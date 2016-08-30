@@ -63,10 +63,10 @@ public class RepositorySystemHelper {
    * @param extraRepos
    *          map with extra repositories <id, url>.
    */
-  public RepositorySystemHelper(String localRepoDir, Map<String, String> extraRepos) {
+  public RepositorySystemHelper(String localRepoDir, Map<String, String> extraRepos, boolean withoutProvided) {
     repoSystem = newRepositorySystem();
 
-    session = newSession(repoSystem, localRepoDir);
+    session = newSession(repoSystem, localRepoDir, withoutProvided);
 
     RemoteRepository central = new RemoteRepository.Builder("central", "default", "http://central.maven.org/maven2/").build();
 
@@ -118,20 +118,22 @@ public class RepositorySystemHelper {
    *          the directory where to put the downloaded artifacts
    * @return the configured repository session
    */
-  private RepositorySystemSession newSession(RepositorySystem system, final String localDownloadDir) {
+  private RepositorySystemSession newSession(RepositorySystem system, final String localDownloadDir, boolean withoutProvided) {
     DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
 
     LocalRepository localRepo = new LocalRepository(localDownloadDir);
     session.setLocalRepositoryManager(system.newLocalRepositoryManager(session, localRepo));
 
-    DependencySelector depFilter =
-        new AndDependencySelector(
-        new ScopeDependencySelector(JavaScopes.PROVIDED),
-        new OptionalDependencySelector(),
-        new ExclusionDependencySelector()
-    );
-    session.setDependencySelector(depFilter);
-
+    if (!withoutProvided) {
+	    DependencySelector depFilter =
+	        new AndDependencySelector(
+	        new ScopeDependencySelector(JavaScopes.PROVIDED),
+	        new OptionalDependencySelector(),
+	        new ExclusionDependencySelector()
+	    );
+	    session.setDependencySelector(depFilter);
+    }
+    
     return session;
   }
 

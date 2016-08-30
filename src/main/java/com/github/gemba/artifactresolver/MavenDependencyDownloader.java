@@ -48,6 +48,7 @@ public class MavenDependencyDownloader {
 
   private static boolean javadoc = false;
   private static boolean sources = false;
+  private static boolean withoutTests = false;
   private static String dependencyFile;
   private static String localRepo;
   private static ArrayList<DefaultArtifact> artifacts;
@@ -87,11 +88,11 @@ public class MavenDependencyDownloader {
         String version = (String) jsonObj.get("version");
 
         DefaultArtifact artifact = new DefaultArtifact(groupId, artifactId, classifier, extension, version);
-        dependencyResolver.downloadDependencyTree(artifact, javadoc, sources);
+        dependencyResolver.downloadDependencyTree(artifact, javadoc, sources, withoutTests);
       }
     } else {
       for (DefaultArtifact artifact : artifacts) {
-        dependencyResolver.downloadDependencyTree(artifact, javadoc, sources);
+        dependencyResolver.downloadDependencyTree(artifact, javadoc, sources, withoutTests);
       }
     }
     log.info("... artifacts downloaded to \"{}\". Finished. Thank you.", localRepo);
@@ -122,6 +123,10 @@ public class MavenDependencyDownloader {
 
     if (line.hasOption('s')) {
       sources = true;
+    }
+    
+    if (line.hasOption('t')) {
+        withoutTests = true;
     }
 
     dependencyFile = line.getOptionValue('f', DEFAULT_DEPENDENCY_FILE);
@@ -155,12 +160,14 @@ public class MavenDependencyDownloader {
 
     Option javadoc = Option.builder("j").longOpt("with-javadoc").desc("download javadoc attachment of artifact").build();
     Option sources = Option.builder("s").longOpt("with-sources").desc("download source attachment of artifact").build();
+    Option withoutTests = Option.builder("t").longOpt("without-tests").desc("don't download test dependencies of artifact").build();
 
     options.addOption(help);
     options.addOption(depDir);
     options.addOption(jsonFile);
     options.addOption(javadoc);
     options.addOption(sources);
+    options.addOption(withoutTests);
   }
 
   /**

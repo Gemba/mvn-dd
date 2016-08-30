@@ -60,7 +60,7 @@ public class DependencyResolver {
    * @throws DependencyResolutionException
    *           if a dependency is not resolvable
    */
-  public void downloadDependencyTree(DefaultArtifact artifact, boolean javadoc, boolean sources)
+  public void downloadDependencyTree(DefaultArtifact artifact, boolean javadoc, boolean sources, boolean withoutTests)
       throws DependencyCollectionException, DependencyResolutionException {
     log.info("Resolving: {} with these dependencies ...", artifact.toString());
 
@@ -68,8 +68,11 @@ public class DependencyResolver {
 
     DependencyNode jarNode = repoSystemHelper.collectDependencies(dependency);
 
-    DependencyFilter classpathFilter = DependencyFilterUtils.classpathFilter(JavaScopes.TEST);
-    jarNode.accept(new TreeDependencyVisitor(new FilteringDependencyVisitor(new DependencyGraphPrinter(), classpathFilter)));
+    DependencyFilter classpathFilter = null;
+    if (!withoutTests) {
+    	classpathFilter = DependencyFilterUtils.classpathFilter(JavaScopes.TEST);
+    	jarNode.accept(new TreeDependencyVisitor(new FilteringDependencyVisitor(new DependencyGraphPrinter(), classpathFilter)));
+    }
 
     DependencyRequest dependencyRequest = new DependencyRequest(jarNode, classpathFilter);
     DependencyResult dependencyResult = repoSystemHelper.resolveDependencies(dependencyRequest);

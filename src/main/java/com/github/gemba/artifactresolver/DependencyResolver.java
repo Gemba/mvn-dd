@@ -72,6 +72,8 @@ public class DependencyResolver {
     if (!withoutTests) {
     	classpathFilter = DependencyFilterUtils.classpathFilter(JavaScopes.TEST);
     	jarNode.accept(new TreeDependencyVisitor(new FilteringDependencyVisitor(new DependencyGraphPrinter(), classpathFilter)));
+    } else {
+    	jarNode.accept(new DependencyGraphPrinter());
     }
 
     DependencyRequest dependencyRequest = new DependencyRequest(jarNode, classpathFilter);
